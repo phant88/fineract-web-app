@@ -6,6 +6,10 @@ import { Pipe, PipeTransform } from '@angular/core';
 export class ChargesFilterPipe implements PipeTransform {
 
   transform(charges: any, chargesDataSource: any, currencyCode: string, multiDisburseLoan?: boolean): any {
+    console.log('+++++ FILTER CHARGES +++++');
+    console.log(chargesDataSource);
+    console.log(currencyCode);
+    console.log(multiDisburseLoan);
     if (charges) {
       charges = charges.filter((charge: any) => {
         if ((charge.currency.code !== currencyCode) || (!!multiDisburseLoan && charge.chargeTimeType.id === 12) || chargesDataSource.filter((chargeData: any) => chargeData.id === charge.id).length) {
