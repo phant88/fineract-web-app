@@ -96,7 +96,11 @@ export class AuthenticationService {
       let httpParams = new HttpParams();
       httpParams = httpParams.set('client_id', 'community-app');
       httpParams = httpParams.set('grant_type', 'password');
-      return this.http.disableApiPrefix().post(`${environment.oauth.serverUrl}/oauth/token`, {}, { params: httpParams })
+      httpParams = httpParams.set('username',loginContext.username);
+      httpParams = httpParams.set('password', loginContext.password);
+      httpParams = httpParams.set('client_secret', 'CJCJydpOR6MwjXttnWyqTpER3otvx1AG');
+      console.log('${environment.oauth.serverUrl}');
+      return this.http.disableApiPrefix().post('https://ec2-23-21-0-213.compute-1.amazonaws.com:9090/realms/fineract/protocol/openid-connect/token', {}, { params: httpParams })
         .pipe(
           map((tokenResponse: OAuth2Token) => {
             this.getUserDetails(tokenResponse);

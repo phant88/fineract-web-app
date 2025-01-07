@@ -9,23 +9,23 @@ export const environment = {
   fineractPlatformTenantId: window['env']['fineractPlatformTenantId'] || 'default',
   fineractPlatformTenantIds: window['env']['fineractPlatformTenantIds'] || 'default',
   // For connecting to others servers running elsewhere update the base API URL
-  baseApiUrls: window['env']['fineractApiUrls'] || 'https://64.176.8.158:8443',
+  baseApiUrls: window['env']['fineractApiUrls'] || 'https://ec2-23-21-0-213.compute-1.amazonaws.com:8443',
   // For connecting to server running elsewhere set the base API URL
-  baseApiUrl:  'https://64.176.8.158:8443',
+  baseApiUrl:  'https://ec2-23-21-0-213.compute-1.amazonaws.com:8443',
   allowServerSwitch: env.allow_switching_backend_instance,
   apiProvider: window['env']['apiProvider'] || '/fineract-provider/api',
   apiVersion: window['env']['apiVersion'] || '/v1',
   serverUrl: '',
   oauth: {
-    enabled: false,  // For connecting to Mifos X using OAuth2 Authentication change the value to true
-    serverUrl: ''
+    enabled: true,  // For connecting to Mifos X using OAuth2 Authentication change the value to true
+    serverUrl: 'https://ec2-23-21-0-213.compute-1.amazonaws.com:9090/realms/fineract'
   },
   warningDialog: {
     title: 'Warning',
     content: 'This system is for authorized use only. Unauthorized access will result in possible legal action. By accessing this system, you acknowledge that you are authorized to do so and that all data stored and processed here is confidential.',
     buttonText: 'Close'
   },
-  defaultLanguage: window['env']['defaultLanguage'] || 'en-US',
+  defaultLanguage: window['env']['defaultLanguage'] || 'es-MX',
   supportedLanguages: window['env']['supportedLanguages'] || 'cs-CS,de-DE,en-US,es-MX,fr-FR,it-IT,ko-KO,lt-LT,lv-LV,ne-NE,pt-PT,sw-SW',
   preloadClients: window['env']['preloadClients'] || true,
 

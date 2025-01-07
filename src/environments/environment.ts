@@ -14,18 +14,16 @@ export const environment = {
   fineractPlatformTenantId: window['env']['fineractPlatformTenantId'] || 'default',
   fineractPlatformTenantIds: window['env']['fineractPlatformTenantIds'] || 'default',
   // For connecting to others servers running elsewhere update the base API URL
-  baseApiUrls: window['env']['fineractApiUrls'] ||
-    'https://dev.mifos.io,https://demo.mifos.io,https://qa.mifos.io,https://staging.mifos.io,https://mobile.mifos.io,https://demo.fineract.dev,https://localhost:8443,'
-    + window.location.protocol + '//' + window.location.hostname + ':' + window.location.port,
+  baseApiUrls: window['env']['fineractApiUrls'] || 'https://ec2-23-21-0-213.compute-1.amazonaws.com:8443',
   // For connecting to server running elsewhere set the base API URL
-  baseApiUrl:  'https://64.176.8.158:8443',
+  baseApiUrl:  'https://ec2-23-21-0-213.compute-1.amazonaws.com:8443',
   allowServerSwitch: env.allow_switching_backend_instance,
   apiProvider: window['env']['apiProvider'] || '/fineract-provider/api',
   apiVersion: window['env']['apiVersion'] || '/v1',
   serverUrl: '',
   oauth: {
-    enabled: false,  // For connecting to Mifos X using OAuth2 Authentication change the value to true
-    serverUrl: ''
+    enabled: true,  // For connecting to Mifos X using OAuth2 Authentication change the value to true
+    serverUrl: 'https://ec2-23-21-0-213.compute-1.amazonaws.com:9090/realms/fineract'
   },
   warningDialog: {
     title: 'Warning',
