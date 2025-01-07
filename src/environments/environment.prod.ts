@@ -11,14 +11,16 @@ export const environment = {
   // For connecting to others servers running elsewhere update the base API URL
   baseApiUrls: window['env']['fineractApiUrls'] || 'https://ec2-23-21-0-213.compute-1.amazonaws.com:8443',
   // For connecting to server running elsewhere set the base API URL
-  baseApiUrl:  'https://ec2-23-21-0-213.compute-1.amazonaws.com:8443',
+  baseApiUrl: window['env']['fineractApiUrl'] || window.location.protocol + '//' + window.location.hostname,
+  oauthServerUrl: window['env']['oauthServerUrl'] || window['env']['fineractApiUrl'] + window['env']['apiProvider'],
   allowServerSwitch: env.allow_switching_backend_instance,
   apiProvider: window['env']['apiProvider'] || '/fineract-provider/api',
   apiVersion: window['env']['apiVersion'] || '/v1',
   serverUrl: '',
   oauth: {
-    enabled: true,  // For connecting to Mifos X using OAuth2 Authentication change the value to true
-    serverUrl: 'https://ec2-23-21-0-213.compute-1.amazonaws.com:9090/realms/fineract'
+    enabled: window['env']['oauthServerEnabled'] || false,  // For connecting to Mifos X using OAuth2 Authentication change the value to true
+    serverUrl: window['env']['oauthServerUrl'] || '',
+    appId: window['env']['oauthAppId'] || ''
   },
   warningDialog: {
     title: 'Warning',
@@ -46,4 +48,3 @@ export const environment = {
 
 // Server URL
 environment.serverUrl = `${environment.baseApiUrl}${environment.apiProvider}${environment.apiVersion}`;
-environment.oauth.serverUrl = `${environment.baseApiUrl}${environment.apiProvider}`;

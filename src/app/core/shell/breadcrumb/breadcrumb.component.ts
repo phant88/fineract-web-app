@@ -1,5 +1,5 @@
 /** Angular Imports */
-import { Component, OnInit , TemplateRef, ElementRef , ViewChild, AfterViewInit} from '@angular/core';
+import { Component, TemplateRef, ElementRef , ViewChild, AfterViewInit} from '@angular/core';
 import { ActivatedRoute, Router, NavigationEnd, Data } from '@angular/router';
 
 /** rxjs Imports */
@@ -50,7 +50,7 @@ const routeAddBreadcrumbLink = 'addBreadcrumbLink';
   templateUrl: './breadcrumb.component.html',
   styleUrls: ['./breadcrumb.component.scss']
 })
-export class BreadcrumbComponent implements OnInit, AfterViewInit {
+export class BreadcrumbComponent implements AfterViewInit {
 
   /** Array of breadcrumbs. */
   breadcrumbs: Breadcrumb[];
@@ -72,9 +72,6 @@ export class BreadcrumbComponent implements OnInit, AfterViewInit {
               private popoverService: PopoverService,
               private translateService: TranslateService) {
     this.generateBreadcrumbs();
-  }
-
-  ngOnInit() {
   }
 
   /**
@@ -120,20 +117,20 @@ export class BreadcrumbComponent implements OnInit, AfterViewInit {
               breadcrumbLabel = route.snapshot.paramMap.get(route.snapshot.data[routeParamBreadcrumb]);
               const routeData: Data = route.snapshot.data;
               if (routeData.breadcrumb === 'Clients') {
-                breadcrumbLabel = routeData.clientViewData.displayName;
+                breadcrumbLabel = this.printableValue(routeData.clientViewData.displayName);
                 currentUrl += `/general`;
               } else if (routeData.breadcrumb === 'Groups') {
                 breadcrumbLabel = routeData.groupViewData.name;
               } else if (routeData.breadcrumb === 'Centers') {
                 breadcrumbLabel = routeData.centerViewData.name;
               } else if (routeData.breadcrumb === 'Loans') {
-                breadcrumbLabel = routeData.loanDetailsData.loanProductName + ' (' + routeData.loanDetailsData.accountNo + ')';
+                breadcrumbLabel = this.printableValue(routeData.loanDetailsData.loanProductName) + ' (' + routeData.loanDetailsData.accountNo + ')';
               } else if (routeData.breadcrumb === 'Savings') {
-                breadcrumbLabel = routeData.savingsAccountData.savingsProductName + ' (' + routeData.savingsAccountData.accountNo + ')';
+                breadcrumbLabel = this.printableValue(routeData.savingsAccountData.savingsProductName) + ' (' + routeData.savingsAccountData.accountNo + ')';
               } else if (routeData.breadcrumb === 'Fixed Deposits') {
-                breadcrumbLabel = routeData.fixedDepositsAccountData.depositProductName + ' (' + routeData.fixedDepositsAccountData.accountNo + ')';
+                breadcrumbLabel = this.printableValue(routeData.fixedDepositsAccountData.depositProductName) + ' (' + routeData.fixedDepositsAccountData.accountNo + ')';
               } else if (routeData.breadcrumb === 'Loan Products') {
-                breadcrumbLabel = routeData.loanProduct.name;
+                breadcrumbLabel = this.printableValue(routeData.loanProduct.name);
               } else if (routeData.breadcrumb === 'Charges') {
                 breadcrumbLabel = routeData.loansAccountCharge.name;
               } else if (routeData.breadcrumb === 'Saving Products') {
@@ -184,6 +181,13 @@ export class BreadcrumbComponent implements OnInit, AfterViewInit {
         });
       }
     });
+  }
+
+  printableValue(value: string): string {
+    if (value.length <= 30) {
+      return value;
+    }
+    return value.substring(0, 30) + '...';
   }
 
   /**
