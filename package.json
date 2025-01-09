@@ -14,8 +14,8 @@
     "prepare": "husky",
     "ng": "ng",
     "build": "node version.js && npm run env -s && ng build --configuration production --output-hashing=none",
-    "build:prod": "node version.js && node --max-old-space-size=16384 ./node_modules/@angular/cli/bin/ng build --configuration production --output-hashing=none --base-href=/",
-    "start": "npm run env -s && node --max-old-space-size=16384 ./node_modules/@angular/cli/bin/ng serve --proxy-config proxy.conf.js",
+    "build:prod": "npm run loadenv && node version.js && node --max-old-space-size=16384 ./node_modules/@angular/cli/bin/ng build --configuration production --output-hashing=none --base-href=/",
+    "start": "npm run loadenv && npm run env -s && node --max-old-space-size=16384 ./node_modules/@angular/cli/bin/ng serve --proxy-config proxy.conf.js",
     "serve:dev": "npm run env -s && ng serve",
     "serve:sw": "npm run build -s && npx http-server ./dist -p 4200",
     "lint": "ng lint && stylelint \"src/**/*.scss\" && prettier . --check && htmlhint \"src\" --config .htmlhintrc",
@@ -27,7 +27,8 @@
     "env": "node version.js",
     "postinstall": "node version.js && ngcc",
     "cypress:open": "cypress open",
-    "cypress:run": "cypress run"
+    "cypress:run": "cypress run",
+    "loadenv": "node loadenv.js"
   },
   "dependencies": {
     "@angular-devkit/schematics": "14.2.12",
@@ -56,6 +57,7 @@
     "@tailwindcss/forms": "^0.5.4",
     "chart.js": "3.0.0-alpha",
     "d3": "^7.9.0",
+    "dotenv": "^16.4.7",
     "html2canvas": "^1.4.1",
     "install": "^0.13.0",
     "jspdf": "^2.5.1",

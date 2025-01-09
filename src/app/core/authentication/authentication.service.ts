@@ -4,7 +4,7 @@ import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 
 /** rxjs Imports */
 import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
 
 /** Custom Services */
 import { AlertService } from '../alert/alert.service';
@@ -57,8 +57,8 @@ export class AuthenticationService {
    * @param {AuthenticationInterceptor} authenticationInterceptor Authentication Interceptor.
    */
   constructor(private http: HttpClient,
-              private alertService: AlertService,
-              private authenticationInterceptor: AuthenticationInterceptor) {
+    private alertService: AlertService,
+    private authenticationInterceptor: AuthenticationInterceptor) {
     this.userLoggedIn = false;
     this.rememberMe = false;
     this.storage = sessionStorage;
@@ -96,13 +96,14 @@ export class AuthenticationService {
       let httpParams = new HttpParams();
       httpParams = httpParams.set('username', loginContext.username);
       httpParams = httpParams.set('password', loginContext.password);
-      httpParams = httpParams.set('client_id', `${environment.oauth.appId}`);      
+      httpParams = httpParams.set('client_id', `${environment.oauth.appId}`);
       httpParams = httpParams.set('grant_type', 'password');
+      httpParams = httpParams.set('client_secret', `${environment.oauth.clientSecret}`);
       let headers = new HttpHeaders();
       headers = headers.set('Content-Type', 'application/x-www-form-urlencoded')
-      return this.http.disableApiPrefix().post(`${environment.oauth.serverUrl}/token`, httpParams.toString(), {headers: headers})
+      return this.http.disableApiPrefix().post(`${environment.oauth.serverUrl}/token`, httpParams.toString(), { headers: headers })
         .pipe(
-          map((tokenResponse: OAuth2Token) => {            
+          map((tokenResponse: OAuth2Token) => {
             this.getUserDetails(tokenResponse);
             return of(true);
           })
@@ -124,12 +125,20 @@ export class AuthenticationService {
    * Sets the oauth2 token refresh time.
    * @param {OAuth2Token} tokenResponse OAuth2 Token details.
    */
-  private getUserDetails(tokenResponse: OAuth2Token) {    
+  private getUserDetails(tokenResponse: OAuth2Token) {
     this.refreshTokenOnExpiry(tokenResponse.expires_in);
-    let headers = new HttpHeaders();    
-    headers = headers.set('Authorization', 'bearer '+tokenResponse.access_token)
-    this.http.disableApiPrefix().get(`${environment.serverUrl}/userdetails`,{ headers: headers })
+    let headers = new HttpHeaders();
+    headers = headers.set('Authorization', 'bearer ' + tokenResponse.access_token);
+    this.http.get('/userdetails', { headers: headers })
+      .pipe(
+        catchError(error => {
+          console.error('Error fetching user details:', error);
+          // Handle the error as needed, for example, return an empty observable
+          return of(null);
+        })
+      )
       .subscribe((credentials: Credentials) => {
+        console.log('ingreso', credentials);
         this.onLoginSuccess(credentials);
         if (!credentials.shouldRenewPassword) {
           this.storage.setItem(this.oAuthTokenDetailsStorageKey, JSON.stringify(tokenResponse));
@@ -141,7 +150,7 @@ export class AuthenticationService {
    * Sets the oauth2 token to refresh on expiry.
    * @param {number} expiresInTime OAuth2 token expiry time in seconds.
    */
-  private refreshTokenOnExpiry(expiresInTime: number) {    
+  private refreshTokenOnExpiry(expiresInTime: number) {
     setTimeout(() => this.refreshOAuthAccessToken(), expiresInTime * 1000);
   }
 
@@ -153,17 +162,17 @@ export class AuthenticationService {
     if (oAuthRefreshToken == null) {
       return;
     }
-    oAuthRefreshToken = JSON.parse(this.storage.getItem(this.oAuthTokenDetailsStorageKey)).refresh_token;    
-    this.authenticationInterceptor.removeAuthorization();    
-    const credentials = JSON.parse(this.storage.getItem(this.credentialsStorageKey));    
-    let httpParams = new HttpParams();    
+    oAuthRefreshToken = JSON.parse(this.storage.getItem(this.oAuthTokenDetailsStorageKey)).refresh_token;
+    this.authenticationInterceptor.removeAuthorization();
+    const credentials = JSON.parse(this.storage.getItem(this.credentialsStorageKey));
+    let httpParams = new HttpParams();
     httpParams = httpParams.set('username', credentials.username);
     httpParams = httpParams.set('client_id', `${environment.oauth.appId}`);
     httpParams = httpParams.set('refresh_token', oAuthRefreshToken);
     httpParams = httpParams.set('grant_type', 'refresh_token');
     let headers = new HttpHeaders();
     headers = headers.set('Content-Type', 'application/x-www-form-urlencoded')
-    return this.http.disableApiPrefix().post(`${environment.oauth.serverUrl}/token`, httpParams.toString(), {headers: headers})
+    return this.http.disableApiPrefix().post(`${environment.oauth.serverUrl}/token`, httpParams.toString(), { headers: headers })
       .subscribe((tokenResponse: OAuth2Token) => {
         this.storage.setItem(this.oAuthTokenDetailsStorageKey, JSON.stringify(tokenResponse));
         this.authenticationInterceptor.setAuthorizationToken(tokenResponse.access_token);
@@ -173,7 +182,7 @@ export class AuthenticationService {
         this.storage.setItem(this.credentialsStorageKey, JSON.stringify(credentials));
       });
   }
-  
+
   /**
    * Sets the authorization token followed by one of the following:
    *
@@ -211,15 +220,15 @@ export class AuthenticationService {
    */
   private logoutAuthSession() {
     const oAuthRefreshToken = JSON.parse(this.storage.getItem(this.oAuthTokenDetailsStorageKey)).refresh_token;
-    const credentials = JSON.parse(this.storage.getItem(this.credentialsStorageKey));    
-    this.authenticationInterceptor.removeAuthorizationTenant();    
-    let httpParams = new HttpParams();    
+    const credentials = JSON.parse(this.storage.getItem(this.credentialsStorageKey));
+    this.authenticationInterceptor.removeAuthorizationTenant();
+    let httpParams = new HttpParams();
     httpParams = httpParams.set('username', credentials.username);
     httpParams = httpParams.set('client_id', `${environment.oauth.appId}`);
     httpParams = httpParams.set('refresh_token', oAuthRefreshToken);
     let headers = new HttpHeaders();
     headers = headers.set('Content-Type', 'application/x-www-form-urlencoded')
-    return this.http.disableApiPrefix().post(`${environment.oauth.serverUrl}/logout`, httpParams.toString(), {headers: headers}).subscribe();
+    return this.http.disableApiPrefix().post(`${environment.oauth.serverUrl}/logout`, httpParams.toString(), { headers: headers }).subscribe();
   }
 
   /**
@@ -261,8 +270,8 @@ export class AuthenticationService {
    */
   isAuthenticated(): boolean {
     return !!(JSON.parse(
-        sessionStorage.getItem(this.credentialsStorageKey) || localStorage.getItem(this.credentialsStorageKey)
-      ) && this.twoFactorAccessTokenIsValid());
+      sessionStorage.getItem(this.credentialsStorageKey) || localStorage.getItem(this.credentialsStorageKey)
+    ) && this.twoFactorAccessTokenIsValid());
   }
 
   /**
@@ -367,19 +376,19 @@ export class AuthenticationService {
    */
   resetPassword(passwordDetails: any) {
     return this.http.put(`/users/${this.credentials.userId}`, passwordDetails).
-    pipe(
-      map(() => {
-        this.alertService.alert({ type: 'Password Reset Success', message: `Your password was sucessfully reset!` });
-        this.authenticationInterceptor.removeAuthorization();
-        this.authenticationInterceptor.removeTwoFactorAuthorization();
-        const loginContext: LoginContext = {
-          username: this.credentials.username,
-          password: passwordDetails.password,
-          remember: this.rememberMe
-        };
-        this.login(loginContext).subscribe();
-      })
-    );
+      pipe(
+        map(() => {
+          this.alertService.alert({ type: 'Password Reset Success', message: `Your password was sucessfully reset!` });
+          this.authenticationInterceptor.removeAuthorization();
+          this.authenticationInterceptor.removeTwoFactorAuthorization();
+          const loginContext: LoginContext = {
+            username: this.credentials.username,
+            password: passwordDetails.password,
+            remember: this.rememberMe
+          };
+          this.login(loginContext).subscribe();
+        })
+      );
   }
 
   /*
